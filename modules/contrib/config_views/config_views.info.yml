@@ -1,0 +1,13 @@
+name: 'Configuration Entity View'
+description: 'Views handler implementation for configuration entities.'
+core: 8.x
+core_version_requirement: ^8 || ^9
+type: module
+package: Views
+dependencies:
+  - drupal:views
+
+# Information added by Drupal.org packaging script on 2020-06-02
+version: '2.0.0-beta1'
+project: 'config_views'
+datestamp: 1591107744

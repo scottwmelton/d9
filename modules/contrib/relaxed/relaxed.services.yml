@@ -1,0 +1,68 @@
+services:
+  paramconverter.docid:
+    class: Drupal\relaxed\ParamConverter\DocIdConverter
+    arguments: ['@entity.manager', '@multiversion.entity_index.uuid', '@multiversion.entity_index.rev', '@multiversion.entity_index.rev.tree']
+    tags:
+      - { name: paramconverter, priority: 30 }
+  paramconverter.db:
+    class: Drupal\relaxed\ParamConverter\DbConverter
+    arguments: ['@workspace.manager']
+    tags:
+      - { name: paramconverter, priority: 20 }
+  paramconverter.entity_uuid:
+    class: Drupal\relaxed\ParamConverter\EntityUuidConverter
+    arguments: ['@entity.manager', '@multiversion.entity_index.uuid']
+    tags:
+      - { name: paramconverter, priority: 20 }
+  workspace.negotiator.relaxed:
+    class: Drupal\relaxed\Workspace\RelaxedWorkspaceNegotiator
+    arguments: ['@config.factory']
+    calls:
+      - [setContainer, ['@service_container']]
+      - [setCurrentUser, ['@current_user']]
+      - [setWorkspaceManager, ['@workspace.manager']]
+    tags:
+      - { name: workspace_negotiator, priority: 300 }
+  plugin.manager.remote_check:
+    class: Drupal\relaxed\Plugin\RemoteCheckManager
+    parent: default_plugin_manager
+  relaxed.remote_pointer:
+    class: Drupal\relaxed\RemotePointer
+    arguments: ['@entity_type.manager', '@http_client']
+  relaxed.couchdb_replicator:
+    class: Drupal\relaxed\CouchdbReplicator
+    arguments: ['@config.factory', '@relaxed.sensitive_data.transformer']
+    tags:
+      - {name: workspace_replicator, priority: 20}
+  relaxed.replicate:
+    class: Drupal\relaxed\Replicate\Replicate
+  relaxed.normalizer.replicate:
+    class: Drupal\relaxed\Normalizer\ReplicateNormalizer
+    tags:
+      - { name: normalizer, priority: 10 }
+    arguments: ['@relaxed.replicate']
+  relaxed.resource_response.subscriber:
+    class: Drupal\relaxed\EventSubscriber\ResourceResponseSubscriber
+    tags:
+      - { name: event_subscriber }
+    arguments: ['@serializer', '@renderer', '@current_route_match']
+  relaxed.ensure_full_commit.subscriber:
+    class: Drupal\relaxed\EventSubscriber\EnsureFullCommitSubscriber
+    arguments: ['@entity_type.manager', '@workspace.manager', '@?plugin.manager.alias_type', '@?pathauto.generator']
+    tags:
+      - { name: event_subscriber }
+  relaxed.sensitive_data.transformer:
+    class: Drupal\relaxed\SensitiveDataTransformer
+    arguments: ['@config.factory']
+  relaxed.http_middleware.request_format_setter:
+    class: Drupal\relaxed\StackMiddleware\RequestFormatSetter
+    arguments: ['@config.factory']
+    tags:
+      # Set priority to 201 so it happens right before the page cache
+      # middleware (priority 200)has the opportunity to respond.
+      - { name: http_middleware, priority: 201 }
+  relaxed.route_subscriber:
+    class: Drupal\relaxed\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+    arguments: ['@module_handler', '@config.factory']

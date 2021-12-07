@@ -1,0 +1,18 @@
+name: Migrate Source UI
+type: module
+description: UI for CSV, XML or JSON sources.
+core: 8.x
+core_version_requirement: ^8 || ^9
+package: Migrate
+configure: migrate_source_ui.form
+
+dependencies:
+  - drupal:migrate
+  - migrate_plus:migrate_plus
+  - migrate_source_csv:migrate_source_csv
+  - migrate_tools:migrate_tools
+
+# Information added by Drupal.org packaging script on 2021-04-23
+version: '8.x-1.0-rc2'
+project: 'migrate_source_ui'
+datestamp: 1619193518

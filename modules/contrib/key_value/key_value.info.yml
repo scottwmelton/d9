@@ -1,0 +1,11 @@
+name: 'Key-value Extensions'
+type: module
+description: 'Extends the core key-value API with a backend for lists and sorted sets that you can do range queries on.'
+core_version_requirement: ^8 || ^9
+dependencies:
+  - drupal:serialization
+
+# Information added by Drupal.org packaging script on 2021-10-07
+version: '8.x-1.2'
+project: 'key_value'
+datestamp: 1633610747

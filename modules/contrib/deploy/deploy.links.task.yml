@@ -1,0 +1,10 @@
+entity.replication.collection:
+  route_name: entity.replication.collection
+  base_route: entity.replication.collection
+  title: 'Deployments'
+
+entity.replication.delete_form:
+  route_name:  entity.replication.delete_form
+  base_route:  entity.replication.canonical
+  title: Delete
+  weight: 10

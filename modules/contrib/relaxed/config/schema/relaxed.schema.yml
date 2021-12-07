@@ -1,0 +1,41 @@
+relaxed.settings:
+  type: config_object
+  label: 'Relaxed API settings'
+  mapping:
+    api_root:
+      type: string
+      label: 'Absolute base path to the API root, without trailing slash.'
+    username:
+      type: string
+      label: 'Replicator username'
+    password:
+      type: string
+      label: 'Replicator password'
+    encrypt:
+      type: integer
+      label: 'Encrypt sensitive data'
+    encrypt_profile:
+      type: string
+      label: 'Encryption profile to use'
+
+relaxed.remote.*:
+  type: config_entity
+  label: 'Remote config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string
+      label: 'UUID'
+    plugin:
+      type: string
+      label: 'Plugin'
+    settings:
+      type: relaxed.endpoint.configuration.[%parent.plugin]
+
+relaxed.endpoint.configuration.*:
+  type: endpoint_configuration

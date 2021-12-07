@@ -1,0 +1,62 @@
+<?php
+
+use Drupal\Core\Serialization\Yaml;
+use Drupal\user\Entity\Role;
+
+/**
+ * Implements hook_install().
+ */
+function relaxed_install() {
+  // Demonstrate best security practice and create a separate role with the
+  // only permissions needed to perform content replication.
+  $rid = 'replicator';
+  $replicator_role = Role::load($rid);
+  if (empty($replicator_role)) {
+    Role::create([
+      'id' => $rid,
+      'label' => 'Replicator',
+      'weight' => 0,
+      'is_admin' => 0,
+      'permissions' => [
+        'perform push replication',
+        'administer users',
+        'administer workspaces',
+        'bypass node access',
+      ],
+    ])->save();
+  }
+}
+
+/**
+ * Load new rest configuration for RESTful Web Services module.
+ */
+function relaxed_update_8301() {
+  \Drupal::state()->set('relaxed_update_8301_resources', \Drupal::config('rest.settings')->get('resources'));
+  \Drupal::configFactory()->getEditable('rest.settings')
+    ->clear('resources')
+    ->save();
+}
+
+/**
+ * Load new rest configuration.
+ */
+function relaxed_update_8302() {
+  \Drupal::state()->set('relaxed_update_8302_resources', \Drupal::config('rest.settings')->get('resources'));
+  \Drupal::configFactory()->getEditable('rest.settings')
+    ->clear('resources')
+    ->save();
+}
+
+/**
+ * Update REST config for Changes endpoint.
+ */
+function relaxed_update_8303() {
+  $config_factory = \Drupal::configFactory();
+  $config_name = 'rest.resource.relaxed.changes';
+  $config_data = file_get_contents(__DIR__ . "/config/optional/{$config_name}.yml");
+  $config = Yaml::decode($config_data);
+
+  $config_factory->getEditable($config_name)
+    ->setData($config)
+    ->save(TRUE);
+}
