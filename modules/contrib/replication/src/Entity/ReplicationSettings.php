@@ -14,13 +14,21 @@ use Drupal\replication\Entity\ReplicationSettingsInterface;
  * @ConfigEntityType(
  *   id = "replication_settings",
  *   label = @Translation("Replication settings"),
- *   config_prefix = "replication_settings",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label"
+ *   },
+ *   list_cache_tags = { "rendered" },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "locked",
+ *     "pattern",
  *   }
  * )
  */
+
+
 class ReplicationSettings extends ConfigEntityBase implements ReplicationSettingsInterface {
 
   /**

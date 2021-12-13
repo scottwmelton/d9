@@ -175,7 +175,7 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
     }
 
     $event = new ReplicationContentDataAlterEvent($entity, $data, $format, $context);
-    $this->dispatcher->dispatch(ReplicationDataEvents::ALTER_CONTENT_DATA, $event);
+    $this->dispatcher->dispatch($event, ReplicationDataEvents::ALTER_CONTENT_DATA);
 
     return $event->getData();
   }

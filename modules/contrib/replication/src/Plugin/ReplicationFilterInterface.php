@@ -2,7 +2,7 @@
 
 namespace Drupal\replication\Plugin;
 
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 

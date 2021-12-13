@@ -2,6 +2,7 @@
 
 namespace Drupal\replication;
 
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\file\FileInterface;
@@ -71,7 +72,7 @@ class ProcessFileAttachment {
       ->getStorage('file')
       ->loadByProperties(['uri' => $uri]);
     if (count($existing_files)) {
-      $uri = file_destination($uri, FILE_EXISTS_RENAME);
+      $uri = file_destination($uri, FileSystemInterface::EXISTS_RENAME);
     }
     $file_context = [
       'uri' => $uri,

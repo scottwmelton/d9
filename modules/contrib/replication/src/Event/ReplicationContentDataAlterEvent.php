@@ -3,8 +3,8 @@
 namespace Drupal\replication\Event;
 
 
+use Symfony\Contracts\EventDispatcher\Event;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Event instance for altering normalized content entity data.
