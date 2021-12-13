@@ -185,7 +185,7 @@ class UpdateForm extends ConfirmFormBase {
           ->getAll();
 
         if ($conflicts) {
-          drupal_set_message($this->t(
+          $this->messenger()->addError($this->t(
             '%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %target workspace</a>.',
             [
               '%upstream' => $upstream->label(),
@@ -194,10 +194,10 @@ class UpdateForm extends ConfirmFormBase {
               '@count' => count($conflicts),
               '%target' => $upstream->label(),
             ]
-          ), 'error');
+          ));
         }
         else {
-          drupal_set_message($this->t('An update of %workspace has been queued with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
+          $this->messenger()->addStatus($this->t('An update of %workspace has been queued with content from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
           if (\Drupal::moduleHandler()->moduleExists('deploy')) {
             $input = $form_state->getUserInput();
             if (!isset($input['_drupal_ajax'])) {
@@ -207,12 +207,12 @@ class UpdateForm extends ConfirmFormBase {
         }
       }
       else {
-        drupal_set_message($this->t('Error updating %workspace from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]), 'error');
+        $this->messenger()->addError($this->t('Error updating %workspace from %upstream.', ['%upstream' => $upstream->label(), '%workspace' => $active->label()]));
       }
     }
     catch (\Exception $e) {
       watchdog_exception('Workspace', $e);
-      drupal_set_message($e->getMessage(), 'error');
+      $this->messenger()->addError($e->getMessage());
     }
   }
 

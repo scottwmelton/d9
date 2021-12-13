@@ -313,7 +313,7 @@ class ReplicatorManager implements ReplicatorInterface {
       'replication' => $replication,
     ]);
 
-    $this->eventDispatcher->dispatch(ReplicationEvents::QUEUED_REPLICATION, new ReplicationEvent($replication));
+    $this->eventDispatcher->dispatch(new ReplicationEvent($replication), ReplicationEvents::QUEUED_REPLICATION);
   }
 
 }

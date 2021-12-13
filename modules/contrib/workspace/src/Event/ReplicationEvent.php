@@ -2,8 +2,8 @@
 
 namespace Drupal\workspace\Event;
 
+use Symfony\Contracts\EventDispatcher\Event;
 use Drupal\workspace\Entity\Replication;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Wraps a replication for event listeners.

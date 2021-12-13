@@ -114,7 +114,7 @@ class InternalReplicator implements ReplicatorInterface {
     }
     catch (\Throwable $e) {
       $this->logger->error('%type: @message in %function (line %line of %file).', Error::decodeException($e));
-      drupal_set_message($e->getMessage(), 'error');
+      \Drupal::messenger()->addError($e->getMessage());
     }
     // Fetch the site time.
     $start_time = new \DateTime();

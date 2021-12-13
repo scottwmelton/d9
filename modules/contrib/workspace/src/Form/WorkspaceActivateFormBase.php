@@ -75,7 +75,7 @@ abstract class WorkspaceActivateFormBase extends FormBase {
     }
     catch(\Exception $e) {
       watchdog_exception('Workspace', $e);
-      drupal_set_message($e->getMessage(), 'error');
+      $this->messenger()->addError($e->getMessage());
     }
   }
 

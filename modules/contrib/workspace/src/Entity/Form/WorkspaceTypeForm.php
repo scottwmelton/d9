@@ -48,13 +48,13 @@ class WorkspaceTypeForm extends BundleEntityFormBase {
 
     switch ($status) {
       case SAVED_NEW:
-        drupal_set_message($this->t('Created the %label Workspace type.', [
+        $this->messenger()->addStatus($this->t('Created the %label Workspace type.', [
           '%label' => $workspace_type->label(),
         ]));
         break;
 
       default:
-        drupal_set_message($this->t('Saved the %label Workspace type.', [
+        $this->messenger()->addStatus($this->t('Saved the %label Workspace type.', [
           '%label' => $workspace_type->label(),
         ]));
     }

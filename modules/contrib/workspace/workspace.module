@@ -1,5 +1,6 @@
 <?php
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -57,7 +58,7 @@ function workspace_entity_type_build(array &$entity_types) {
 /**
  * Implements hook_entity_base_field_info().
  */
-function workspace_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
+function workspace_entity_base_field_info(EntityTypeInterface $entity_type) {
   return \Drupal::service('workspace.entity_type_info')->entityBaseFieldInfo($entity_type);
 }
 
@@ -84,7 +85,7 @@ function workspace_workspace_insert(WorkspaceInterface $workspace) {
 }
 
 function workspace_pointer_allowed_values(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable) {
-  return \Drupal\workspace\Entity\Replication::getPointerAllowedValues($definition, $entity, $cacheable);
+  return Replication::getPointerAllowedValues($definition, $entity, $cacheable);
 }
 
 /**

@@ -55,9 +55,9 @@ class WorkbenchModerationSubscriber implements EventSubscriberInterface {
 
       // If there is no upstream to replicate to, abort.
       if (!$entity->get('upstream')->entity) {
-        drupal_set_message(t('The :source workspace does not have an upstream to replicate to!', [
+        \Drupal::messenger()->addError(t('The :source workspace does not have an upstream to replicate to!', [
           ':source' => $entity->label(),
-        ]), 'error');
+        ]));
 
         // @todo Should we revert the workspace to its previous state?
 

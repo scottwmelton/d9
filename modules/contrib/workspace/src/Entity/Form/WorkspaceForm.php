@@ -179,10 +179,10 @@ class WorkspaceForm extends ContentEntityForm {
 
       if ($replication_status == TRUE) {
         // The replication succeeded, in addition to saving the workspace.
-        drupal_set_message($this->t('Workspace :source has been updated and changes were pushed to :target.', [
+        $this->messenger()->addStatus($this->t('Workspace :source has been updated and changes were pushed to :target.', [
           ':source' => $workspace->label(),
           ':target' => $workspace->get('upstream')->entity->label(),
-        ]), 'status');
+        ]));
 
         $form_state->setValue('id', $workspace->id());
         $form_state->set('id', $workspace->id());
@@ -212,11 +212,11 @@ class WorkspaceForm extends ContentEntityForm {
       // installed.
       if ($is_new) {
         $logger->notice('@type: added %info.', $context);
-        drupal_set_message($this->t('Workspace %info has been created.', $info));
+        $this->messenger()->addStatus($this->t('Workspace %info has been created.', $info));
       }
       else {
         $logger->notice('@type: updated %info.', $context);
-        drupal_set_message($this->t('Workspace %info has been updated.', $info));
+        $this->messenger()->addStatus($this->t('Workspace %info has been updated.', $info));
       }
 
       if ($workspace->id()) {
@@ -226,7 +226,7 @@ class WorkspaceForm extends ContentEntityForm {
         $form_state->setRedirectUrl($redirect);
       }
       else {
-        drupal_set_message($this->t('The workspace could not be saved.'), 'error');
+        $this->messenger()->addError($this->t('The workspace could not be saved.'));
         $form_state->setRebuild();
       }
     }

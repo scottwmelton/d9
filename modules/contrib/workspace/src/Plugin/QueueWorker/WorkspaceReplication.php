@@ -181,7 +181,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
       $replication->setReplicationStatusReplicating()->save();
       $this->logger->info('Replication "@replication" has started.', ['@replication' => $replication->label()]);
 
-      $this->eventDispatcher->dispatch(ReplicationEvents::PRE_REPLICATION, new ReplicationEvent($replication));
+      $this->eventDispatcher->dispatch(new ReplicationEvent($replication), ReplicationEvents::PRE_REPLICATION);
 
       $response = FALSE;
       try {
@@ -245,7 +245,7 @@ class WorkspaceReplication extends QueueWorkerBase implements ContainerFactoryPl
         $this->logger->info('Replication "@replication" has failed.', ['@replication' => $replication->label()]);
       }
 
-      $this->eventDispatcher->dispatch(ReplicationEvents::POST_REPLICATION, new ReplicationEvent($replication));
+      $this->eventDispatcher->dispatch(new ReplicationEvent($replication), ReplicationEvents::POST_REPLICATION);
 
       $this->accountSwitcher->switchBack();
     }

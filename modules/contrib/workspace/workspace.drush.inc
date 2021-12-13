@@ -30,11 +30,11 @@ function drush_workspace_uninstall() {
   if (in_array($extension, $required)) {
     $info = $extension_info[$extension]->info;
     $explanation = !empty($info['explanation']) ? ' ' . dt('Reason: !explanation.', ['!explanation' => strip_tags($info['explanation'])])  : '';
-    drush_log(dt('!extension is a required extension and can\'t be uninstalled.', ['!extension' => $extension]) . $explanation, LogLevel::INFO);
+    \Drupal::logger(dt('!extension is a required extension and can\'t be uninstalled.', ['!extension' => $extension]) . $explanation, LogLevel::INFO);
     $uninstall = FALSE;
   }
   elseif (!$extension_info[$extension]->status) {
-    drush_log(dt('!extension is already uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
+    \Drupal::logger(dt('!extension is already uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
     $uninstall = FALSE;
   }
   elseif (drush_extension_get_type($extension_info[$extension]) == 'module') {
@@ -45,7 +45,7 @@ function drush_workspace_uninstall() {
       }
     }
     if (count($dependents)) {
-      drush_log(dt('To uninstall !extension, the following extensions must be uninstalled first: !required', ['!extension' => $extension, '!required' => implode(', ', $dependents)]), LogLevel::ERROR);
+      \Drupal::logger(dt('To uninstall !extension, the following extensions must be uninstalled first: !required', ['!extension' => $extension, '!required' => implode(', ', $dependents)]), LogLevel::ERROR);
       $uninstall = FALSE;
     }
   }
@@ -111,11 +111,11 @@ function drush_workspace_uninstall() {
       drush_module_uninstall([$extension]);
     }
     catch (Exception $e) {
-      drush_log($e->getMessage(), LogLevel::ERROR);
+      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
     }
 
     // Inform the user of final status.
-    drush_log(dt('!extension was successfully uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
+    \Drupal::logger(dt('!extension was successfully uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
   }
 
 }
