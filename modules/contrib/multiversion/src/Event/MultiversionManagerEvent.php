@@ -3,7 +3,8 @@
 namespace Drupal\multiversion\Event;
 
 use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
+
 
 /**
  * MultiversionManagerEvent class.

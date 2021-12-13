@@ -59,11 +59,11 @@ function drush_multiversion_uninstall() {
   if (in_array($extension, $required)) {
     $info = $extension_info[$extension]->info;
     $explanation = !empty($info['explanation']) ? ' ' . dt('Reason: !explanation.', ['!explanation' => strip_tags($info['explanation'])])  : '';
-    drush_log(dt('!extension is a required extension and can\'t be uninstalled.', ['!extension' => $extension]) . $explanation, LogLevel::INFO);
+    \Drupal::logger(dt('!extension is a required extension and can\'t be uninstalled.', ['!extension' => $extension]) . $explanation, LogLevel::INFO);
     $uninstall = FALSE;
   }
   elseif (!$extension_info[$extension]->status) {
-    drush_log(dt('!extension is already uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
+    \Drupal::logger(dt('!extension is already uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
     $uninstall = FALSE;
   }
   elseif (drush_extension_get_type($extension_info[$extension]) == 'module') {
@@ -74,7 +74,7 @@ function drush_multiversion_uninstall() {
       }
     }
     if (count($dependents)) {
-      drush_log(dt('To uninstall !extension, the following extensions must be uninstalled first: !required', ['!extension' => $extension, '!required' => implode(', ', $dependents)]), LogLevel::ERROR);
+      \Drupal::logger(dt('To uninstall !extension, the following extensions must be uninstalled first: !required', ['!extension' => $extension, '!required' => implode(', ', $dependents)]), LogLevel::ERROR);
       $uninstall = FALSE;
     }
   }
@@ -85,7 +85,7 @@ function drush_multiversion_uninstall() {
       return drush_user_abort();
     }
 
-    drush_log('*** ' . dt('The uninstall process can take a few minutes, it depends by the number of entities on the site. Please be patient.'), LogLevel::WARNING);
+    \Drupal::logger('*** ' . dt('The uninstall process can take a few minutes, it depends by the number of entities on the site. Please be patient.'), LogLevel::WARNING);
 
     try {
       \Drupal::service('multiversion.manager')->disableEntityTypes();
@@ -96,11 +96,11 @@ function drush_multiversion_uninstall() {
       drush_module_uninstall(['multiversion']);
     }
     catch (Exception $e) {
-      drush_log($e->getMessage(), LogLevel::ERROR);
+      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
     }
 
     // Inform the user of final status.
-    drush_log(dt('!extension was successfully uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
+    \Drupal::logger(dt('!extension was successfully uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
   }
 
 }
@@ -111,7 +111,7 @@ function drush_multiversion_uninstall() {
 function drush_multiversion_enable_entity_types() {
   $args = pm_parse_arguments(func_get_args());
   if (empty($args)) {
-    drush_log(dt('Entity types list argument is missing.'), LogLevel::ERROR);
+    \Drupal::logger(dt('Entity types list argument is missing.'), LogLevel::ERROR);
   }
   elseif ($entity_types = _drush_multiversion_get_entity_types($args)) {
     if(!drush_confirm(dt('Do you really want to continue?'))) {
@@ -132,7 +132,7 @@ function drush_multiversion_enable_entity_types() {
       \Drupal::service('multiversion.manager')->enableEntityTypes($entity_types);
     }
     catch (Exception $e) {
-      drush_log($e->getMessage(), LogLevel::ERROR);
+      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
     }
   }
 }
@@ -160,7 +160,7 @@ function drush_multiversion_disable_entity_types() {
       \Drupal::service('multiversion.manager')->disableEntityTypes($entity_types);
     }
     catch (Exception $e) {
-      drush_log($e->getMessage(), LogLevel::ERROR);
+      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
     }
   }
 }
@@ -176,7 +176,7 @@ function _drush_multiversion_get_entity_types($entity_type_ids) {
       }
     }
     catch (Exception $e) {
-      drush_log($e->getMessage(), LogLevel::INFO);
+      \Drupal::logger($e->getMessage(), LogLevel::INFO);
     }
   }
 

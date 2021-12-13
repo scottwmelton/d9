@@ -9,7 +9,7 @@ use Drupal\Core\Database\Query\Merge;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Path\AliasStorage as CoreAliasStorage;
+use Drupal\path_alias\PathAliasStorage as CoreAliasStorage;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
 use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
@@ -53,6 +53,10 @@ class AliasStorage extends CoreAliasStorage {
   /**
    * {@inheritdoc}
    */
+
+/*
+// swm
+
   public function save($source, $alias, $langcode = LanguageInterface::LANGCODE_NOT_SPECIFIED, $pid = NULL) {
     if (!$this->connection->schema()->fieldExists('url_alias', 'workspace')) {
       return parent::save($source, $alias, $langcode, $pid);
@@ -162,6 +166,9 @@ class AliasStorage extends CoreAliasStorage {
     }
     return FALSE;
   }
+
+
+*/
 
   /**
    * {@inheritdoc}

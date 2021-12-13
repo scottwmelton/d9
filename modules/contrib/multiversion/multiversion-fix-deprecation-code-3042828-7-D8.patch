@@ -1,0 +1,607 @@
+diff --git a/multiversion.drush.inc b/multiversion.drush.inc
+index 0616ea2..166645e 100644
+--- a/multiversion.drush.inc
++++ b/multiversion.drush.inc
+@@ -59,11 +59,11 @@ function drush_multiversion_uninstall() {
+   if (in_array($extension, $required)) {
+     $info = $extension_info[$extension]->info;
+     $explanation = !empty($info['explanation']) ? ' ' . dt('Reason: !explanation.', ['!explanation' => strip_tags($info['explanation'])])  : '';
+-    drush_log(dt('!extension is a required extension and can\'t be uninstalled.', ['!extension' => $extension]) . $explanation, LogLevel::INFO);
++    \Drupal::logger(dt('!extension is a required extension and can\'t be uninstalled.', ['!extension' => $extension]) . $explanation, LogLevel::INFO);
+     $uninstall = FALSE;
+   }
+   elseif (!$extension_info[$extension]->status) {
+-    drush_log(dt('!extension is already uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
++    \Drupal::logger(dt('!extension is already uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
+     $uninstall = FALSE;
+   }
+   elseif (drush_extension_get_type($extension_info[$extension]) == 'module') {
+@@ -74,7 +74,7 @@ function drush_multiversion_uninstall() {
+       }
+     }
+     if (count($dependents)) {
+-      drush_log(dt('To uninstall !extension, the following extensions must be uninstalled first: !required', ['!extension' => $extension, '!required' => implode(', ', $dependents)]), LogLevel::ERROR);
++      \Drupal::logger(dt('To uninstall !extension, the following extensions must be uninstalled first: !required', ['!extension' => $extension, '!required' => implode(', ', $dependents)]), LogLevel::ERROR);
+       $uninstall = FALSE;
+     }
+   }
+@@ -85,7 +85,7 @@ function drush_multiversion_uninstall() {
+       return drush_user_abort();
+     }
+ 
+-    drush_log('*** ' . dt('The uninstall process can take a few minutes, it depends by the number of entities on the site. Please be patient.'), LogLevel::WARNING);
++    \Drupal::logger('*** ' . dt('The uninstall process can take a few minutes, it depends by the number of entities on the site. Please be patient.'), LogLevel::WARNING);
+ 
+     try {
+       \Drupal::service('multiversion.manager')->disableEntityTypes();
+@@ -96,11 +96,11 @@ function drush_multiversion_uninstall() {
+       drush_module_uninstall(['multiversion']);
+     }
+     catch (Exception $e) {
+-      drush_log($e->getMessage(), LogLevel::ERROR);
++      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
+     }
+ 
+     // Inform the user of final status.
+-    drush_log(dt('!extension was successfully uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
++    \Drupal::logger(dt('!extension was successfully uninstalled.', ['!extension' => $extension]), LogLevel::INFO);
+   }
+ 
+ }
+@@ -111,7 +111,7 @@ function drush_multiversion_uninstall() {
+ function drush_multiversion_enable_entity_types() {
+   $args = pm_parse_arguments(func_get_args());
+   if (empty($args)) {
+-    drush_log(dt('Entity types list argument is missing.'), LogLevel::ERROR);
++    \Drupal::logger(dt('Entity types list argument is missing.'), LogLevel::ERROR);
+   }
+   elseif ($entity_types = _drush_multiversion_get_entity_types($args)) {
+     if(!drush_confirm(dt('Do you really want to continue?'))) {
+@@ -132,7 +132,7 @@ function drush_multiversion_enable_entity_types() {
+       \Drupal::service('multiversion.manager')->enableEntityTypes($entity_types);
+     }
+     catch (Exception $e) {
+-      drush_log($e->getMessage(), LogLevel::ERROR);
++      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
+     }
+   }
+ }
+@@ -160,7 +160,7 @@ function drush_multiversion_disable_entity_types() {
+       \Drupal::service('multiversion.manager')->disableEntityTypes($entity_types);
+     }
+     catch (Exception $e) {
+-      drush_log($e->getMessage(), LogLevel::ERROR);
++      \Drupal::logger($e->getMessage(), LogLevel::ERROR);
+     }
+   }
+ }
+@@ -176,7 +176,7 @@ function _drush_multiversion_get_entity_types($entity_type_ids) {
+       }
+     }
+     catch (Exception $e) {
+-      drush_log($e->getMessage(), LogLevel::INFO);
++      \Drupal::logger($e->getMessage(), LogLevel::INFO);
+     }
+   }
+ 
+diff --git a/multiversion.module b/multiversion.module
+index 90c9685..17bc798 100644
+--- a/multiversion.module
++++ b/multiversion.module
+@@ -14,6 +14,7 @@ use Drupal\views\Plugin\views\query\QueryPluginBase;
+ use Drupal\views\ViewExecutable;
+ use Drupal\Core\Entity\EntityInterface;
+ use Drupal\multiversion\Entity\Workspace;
++use Drupal\Core\File\FileSystemInterface;
+ 
+ /**
+  * Implements hook_module_implements_alter().
+@@ -542,7 +543,7 @@ function multiversion_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
+ function multiversion_prepare_file_destination($destination) {
+   $dirname = \Drupal::service('file_system')->dirname($destination);
+ 
+-  return file_prepare_directory($dirname, FILE_MODIFY_PERMISSIONS | FILE_CREATE_DIRECTORY);
++  return \Drupal::service('file_system')->prepareDirectory($dirname, FILE_MODIFY_PERMISSIONS | FILE_CREATE_DIRECTORY);
+ }
+ 
+ /**
+diff --git a/src/Controller/MultiversionNodeController.php b/src/Controller/MultiversionNodeController.php
+index d1b992d..860ea56 100644
+--- a/src/Controller/MultiversionNodeController.php
++++ b/src/Controller/MultiversionNodeController.php
+@@ -3,6 +3,7 @@
+ namespace Drupal\multiversion\Controller;
+ 
+ use Drupal\Component\Utility\Xss;
++use Drupal\Core\Link;
+ use Drupal\Core\Url;
+ use Drupal\node\Controller\NodeController;
+ use Drupal\node\NodeInterface;
+@@ -21,7 +22,7 @@ class MultiversionNodeController extends NodeController {
+     $langname = $node->language()->getName();
+     $languages = $node->getTranslationLanguages();
+     $has_translations = (count($languages) > 1);
+-    $node_storage = $this->entityManager()->getStorage('node');
++    $node_storage = $this->entityTypeManager()->getStorage('node');
+     $type = $node->getType();
+ 
+     $build['#title'] = $has_translations ? $this->t('@langname revisions for %title', ['@langname' => $langname, '%title' => $node->label()]) : $this->t('Revisions for %title', ['%title' => $node->label()]);
+@@ -53,10 +54,10 @@ class MultiversionNodeController extends NodeController {
+         // this case.
+         $is_current_revision = $vid == $default_revision || (!$current_revision_displayed && $revision->wasDefaultRevision());
+         if (!$is_current_revision) {
+-          $link = $this->l($date, new Url('entity.node.revision', ['node' => $node->id(), 'node_revision' => $vid]));
++          $link = Link::fromTextAndUrl($date, new Url('entity.node.revision', ['node' => $node->id(), 'node_revision' => $vid]));
+         }
+         else {
+-          $link = $node->link($date);
++          $link = $node->toLink($date);
+           $current_revision_displayed = TRUE;
+         }
+ 
+diff --git a/src/Entity/Index/ComplexLcaResolver.php b/src/Entity/Index/ComplexLcaResolver.php
+index baa44c6..19b725e 100644
+--- a/src/Entity/Index/ComplexLcaResolver.php
++++ b/src/Entity/Index/ComplexLcaResolver.php
+@@ -1,12 +1,17 @@
+ <?php
+ 
+-namespace Drupal\Multiversion\Entity\Index;
++namespace Drupal\multiversion\Entity\Index;
+ 
+ use Drupal\conflict\ConflictAncestorResolverInterface;
+ use Drupal\Core\Entity\RevisionableInterface;
+ use Relaxed\LCA\LowestCommonAncestor;
+ use Fhaculty\Graph\Graph;
+ 
++/**
++ * Class ComplexLcaResolver.
++ *
++ * @package Drupal\multiversion\Entity\Index
++ */
+ class ComplexLcaResolver implements ConflictAncestorResolverInterface {
+ 
+   /**
+@@ -26,6 +31,17 @@ class ComplexLcaResolver implements ConflictAncestorResolverInterface {
+    * @return array
+    *   Returns an array of vertices or an empty array.
+    */
++
++  /**
++   * Find the lowest common parent of two revisions from given graph.
++   *
++   * @param \Drupal\Core\Entity\RevisionableInterface $revision1
++   * @param \Drupal\Core\Entity\RevisionableInterface $revision2
++   * @param Graph $graph
++   *
++   * @return mixed
++   *   Returns an array of vertices or an empty array.
++   */
+   public function resolve(RevisionableInterface $revision1, RevisionableInterface $revision2, Graph $graph = NULL) {
+     $lca = new LowestCommonAncestor($graph);
+     $vertices = $graph->getVertices()->getMap();
+diff --git a/src/Entity/Workspace.php b/src/Entity/Workspace.php
+index 70b0bee..02397a1 100644
+--- a/src/Entity/Workspace.php
++++ b/src/Entity/Workspace.php
+@@ -126,6 +126,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
+       $queue->createQueue();
+       /** @var \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager */
+       $multiversion_manager = \Drupal::service('multiversion.manager');
++      $workspace_manager = \Drupal::service('workspace.manager');
+       $entity_type_manager = $this->entityTypeManager();
+       /** @var \Drupal\Core\Entity\ContentEntityInterface $entity_type */
+       foreach ($multiversion_manager->getEnabledEntityTypes() as $entity_type) {
+@@ -160,8 +161,8 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
+       $queue->createItem($data);
+       $this->setQueuedForDelete()->save();
+ 
+-      if ($this->id() === $multiversion_manager->getActiveWorkspaceId()) {
+-        $multiversion_manager->setActiveWorkspaceId(\Drupal::getContainer()->getParameter('workspace.default'));
++      if ($this->id() === $workspace_manager->getActiveWorkspace()) {
++        $workspace_manager->setActiveWorkspace(\Drupal::getContainer()->getParameter('workspace.default'));
+       }
+ 
+       // Deleted workspace won't be active anymore for users that had it as
+diff --git a/src/MultiversionMigration.php b/src/MultiversionMigration.php
+index 769a59d..c7e3ae0 100644
+--- a/src/MultiversionMigration.php
++++ b/src/MultiversionMigration.php
+@@ -138,19 +138,12 @@ class MultiversionMigration implements MultiversionMigrationInterface {
+    * {@inheritdoc}
+    */
+   public function applyNewStorage(array $entity_type_ids) {
+-    if (version_compare(\Drupal::VERSION, '8.7', '<')) {
+-      // The first call is for making entity types revisionable, the second call
+-      // is for adding required fields.
+-      \Drupal::entityDefinitionUpdateManager()->applyUpdates();
+-      \Drupal::entityDefinitionUpdateManager()->applyUpdates();
+-    }
+-    else {
+-      foreach ($entity_type_ids as $entity_type_id) {
+-        $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+-        $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($entity_type_id);
+-        \Drupal::entityDefinitionUpdateManager()->updateFieldableEntityType($entity_type, $field_storage_definitions);
+-      }
++    foreach ($entity_type_ids as $entity_type_id) {
++      $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
++      $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($entity_type_id);
++      \Drupal::entityDefinitionUpdateManager()->updateFieldableEntityType($entity_type, $field_storage_definitions);
+     }
++
+     return $this;
+   }
+ 
+diff --git a/src/Plugin/migrate/source/EntityContentBase.php b/src/Plugin/migrate/source/EntityContentBase.php
+index 3e11ce1..d229fdd 100644
+--- a/src/Plugin/migrate/source/EntityContentBase.php
++++ b/src/Plugin/migrate/source/EntityContentBase.php
+@@ -20,7 +20,7 @@ class EntityContentBase extends SourcePluginBase {
+     // and the new handler doesn't know how to load from the old schema, we have
+     // to initialize the previously installed storage handler and use that to
+     // load the entities.
+-    $last_definition = $this->entityManager->getLastInstalledDefinition($this->entityTypeId);
++    $last_definition = \Drupal::service('entity.last_installed_schema.repository')->getLastInstalledDefinition($this->entityTypeId);
+     $storage_class = $last_definition->getStorageClass();
+     $last_storage = $this->entityManager->createHandlerInstance($storage_class, $last_definition);
+     $entities = $last_storage->loadMultiple();
+diff --git a/src/Redirect/RedirectRepository.php b/src/Redirect/RedirectRepository.php
+index fe8132c..49187d0 100644
+--- a/src/Redirect/RedirectRepository.php
++++ b/src/Redirect/RedirectRepository.php
+@@ -4,7 +4,8 @@ namespace Drupal\multiversion\Redirect;
+ 
+ use Drupal\Core\Config\ConfigFactoryInterface;
+ use Drupal\Core\Database\Connection;
+-use Drupal\Core\Entity\EntityManagerInterface;
++//use Drupal\Core\Entity\EntityManagerInterface;
++use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\Core\Language\Language;
+ use Drupal\Core\State\StateInterface;
+ use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
+@@ -12,6 +13,11 @@ use Drupal\redirect\Entity\Redirect;
+ use Drupal\redirect\Exception\RedirectLoopException;
+ use Drupal\redirect\RedirectRepository as ContribRedirectRepository;
+ 
++/**
++ * Class RedirectRepository.
++ *
++ * @package Drupal\multiversion\Redirect
++ */
+ class RedirectRepository extends ContribRedirectRepository {
+ 
+   /**
+@@ -27,10 +33,20 @@ class RedirectRepository extends ContribRedirectRepository {
+   private $state;
+ 
+   /**
+-   * {@inheritdoc}
++   * Constructs a \Drupal\redirect\EventSubscriber\RedirectRequestSubscriber
++   * object.
++   *
++   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $manager
++   *   The entity manager service.
++   * @param \Drupal\Core\Database\Connection $connection
++   *   The database connection.
+    */
+-  public function __construct(EntityManagerInterface $manager, Connection $connection, ConfigFactoryInterface $config_factory, WorkspaceManagerInterface $workspace_manager, StateInterface $state) {
+-    parent::__construct($manager, $connection, $config_factory);
++  public function __construct(EntityTypeManagerInterface $manager, Connection $connection, ConfigFactoryInterface $config_factory, WorkspaceManagerInterface $workspace_manager, StateInterface $state) {
++    // We cannot use the parent __construct here since the parent $manager
++    // is expecting the EntityManagerInterface which is deprecated.
++    $this->manager = $manager;
++    $this->connection = $connection;
++    $this->config = $config_factory->get('redirect.settings');
+     $this->workspaceManager = $workspace_manager;
+     $this->state = $state;
+   }
+diff --git a/tests/src/Functional/EntityStorageTest.php b/tests/src/Functional/EntityStorageTest.php
+index 616a9d0..d93cb8a 100644
+--- a/tests/src/Functional/EntityStorageTest.php
++++ b/tests/src/Functional/EntityStorageTest.php
+@@ -359,7 +359,7 @@ class EntityStorageTest extends MultiversionFunctionalTestBase {
+ 
+     // Switch back to the original workspace and check that the entities does
+     // NOT exists here.
+-    $this->multiversionManager->setActiveWorkspaceId(1);
++    $this->workspaceManager->setActiveWorkspace($workspace);
+ 
+     foreach ($this->entityTypes as $entity_type_id => $info) {
+       $storage = $this->entityTypeManager->getStorage($entity_type_id);
+diff --git a/tests/src/Functional/NodeSearchTest.php b/tests/src/Functional/NodeSearchTest.php
+index 35c82a7..652e6da 100644
+--- a/tests/src/Functional/NodeSearchTest.php
++++ b/tests/src/Functional/NodeSearchTest.php
+@@ -46,25 +46,25 @@ class NodeSearchTest extends \CoreSearchNodeUpdateAndDeletionTest {
+     // Search the node to verify it appears in search results
+     $edit = ['keys' => 'dragons'];
+     $this->drupalPostForm('search/node', $edit, t('Search'));
+-    $this->assertText($node->label());
++    $this->assertSession($node->label());
+ 
+     // Get the node info from the search index tables.
+-    $search_index_dataset = db_query("SELECT sid FROM {search_index} WHERE type = 'node_search' AND  word = :word", [':word' => 'dragons'])
++    $search_index_dataset = \Drupal::database()->query("SELECT sid FROM {search_index} WHERE type = 'node_search' AND  word = :word", [':word' => 'dragons'])
+       ->fetchField();
+-    $this->assertNotEqual($search_index_dataset, FALSE, t('Node info found on the search_index'));
++    $this->assertNotEquals($search_index_dataset, FALSE, t('Node info found on the search_index'));
+ 
+     // Delete the node.
+     $node->delete();
+ 
+     // Make sure the node delete doesn't remove the node from index with
+     // multiversion enabled.
+-    $search_index_dataset = db_query("SELECT sid FROM {search_index} WHERE type = 'node_search' AND  word = :word", [':word' => 'dragons'])
++    $search_index_dataset = \Drupal::database()->query("SELECT sid FROM {search_index} WHERE type = 'node_search' AND  word = :word", [':word' => 'dragons'])
+       ->fetchField();
+     $this->assertNotEmpty($search_index_dataset, t('Node info found on the search_index'));
+ 
+     // Search to verify the node doesn't appear anymore.
+     $this->drupalPostForm('search/node', $edit, t('Search'));
+-    $this->assertNoText($node->label());
++    $this->assertSession($node->label());
+   }
+ 
+ }
+diff --git a/tests/src/Functional/RevisionTreeIndexTest.php b/tests/src/Functional/RevisionTreeIndexTest.php
+index 54b2e34..73c4f7b 100644
+--- a/tests/src/Functional/RevisionTreeIndexTest.php
++++ b/tests/src/Functional/RevisionTreeIndexTest.php
+@@ -55,7 +55,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     $revs[] = $leaf_one = $entity->_rev->value;
+ 
+     $entity = $storage->load(1);
+-    $this->assertEqual($entity->getRevisionId(), 3, 'Default revision has been set correctly.');
++    $this->assertEquals($entity->getRevisionId(), 3, 'Default revision has been set correctly.');
+ 
+     // Create a new branch from the second revision.
+     $entity = $storage->loadRevision(2);
+@@ -67,7 +67,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     sort($leafs);
+     $expected_leaf = array_pop($leafs);
+     $entity = $storage->load(1);
+-    $this->assertEqual($entity->_rev->value, $expected_leaf, 'The correct revision won while having two open revisions.');
++    $this->assertEquals($entity->_rev->value, $expected_leaf, 'The correct revision won while having two open revisions.');
+ 
+       // Continue the last branch.
+     $entity = $storage->loadRevision(4);
+@@ -75,7 +75,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     $revs[] = $entity->_rev->value;
+ 
+     $entity = $storage->load(1);
+-    $this->assertEqual($entity->getRevisionId(), 5, 'Default revision has been set correctly.');
++    $this->assertEquals($entity->getRevisionId(), 5, 'Default revision has been set correctly.');
+ 
+     // Add 10 more revisions to test IDs with double figures.
+     for ($x = 0; $x <= 10; $x++) {
+@@ -89,7 +89,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     $revs[] = $entity->_rev->value;
+ 
+     $entity = $storage->load(1);
+-    $this->assertEqual($entity->getRevisionId(), 16, 'Default revision has been set correctly.');
++    $this->assertEquals($entity->getRevisionId(), 16, 'Default revision has been set correctly.');
+ 
+     $expected_tree = [
+       [
+@@ -315,10 +315,10 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     RevisionTreeIndex::sortTree($expected_tree);
+ 
+     $tree = $this->revTree->getTree($uuid);
+-    $this->assertEqual($tree, $expected_tree, 'Tree was correctly parsed.');
++    $this->assertEquals($tree, $expected_tree, 'Tree was correctly parsed.');
+ 
+     $default_rev = $this->revTree->getDefaultRevision($uuid);
+-    $this->assertEqual($default_rev, $revs[15], 'Default revision is correct.');
++    $this->assertEquals($default_rev, $revs[15], 'Default revision is correct.');
+ 
+     $expected_default_branch = [
+       $revs[0] => 'available',
+@@ -338,10 +338,10 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+       $revs[15] => 'available',
+     ];
+     $default_branch = $this->revTree->getDefaultBranch($uuid);
+-    $this->assertEqual($default_branch, $expected_default_branch, 'Default branch is correct.');
++    $this->assertEquals($default_branch, $expected_default_branch, 'Default branch is correct.');
+ 
+     $count = $this->revTree->countRevs($uuid);
+-    $this->assertEqual($count, 15, 'Number of revisions is correct.');
++    $this->assertEquals($count, 15, 'Number of revisions is correct.');
+ 
+     $expected_open_revision = [
+       $revs[2] => 'available',
+@@ -349,14 +349,14 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+       $revs[16] => 'available',
+     ];
+     $open_revisions = $this->revTree->getOpenRevisions($uuid);
+-    $this->assertEqual($open_revisions, $expected_open_revision, 'Open revisions are correct.');
++    $this->assertEquals($open_revisions, $expected_open_revision, 'Open revisions are correct.');
+ 
+     $expected_conflicts = [
+       $revs[2] => 'available',
+       $revs[16] => 'available',
+     ];
+     $conflicts = $this->revTree->getConflicts($uuid);
+-    $this->assertEqual($conflicts, $expected_conflicts, 'Conflicts are correct');
++    $this->assertEquals($conflicts, $expected_conflicts, 'Conflicts are correct');
+   }
+ 
+   public function testWithDelete() {
+@@ -378,7 +378,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+       $revs[0] => 'available',
+       $revs[1] => 'deleted',
+     ];
+-    $this->assertEqual($default_branch, $expected_default_branch, 'Default branch is corrected when default revision is deleted.');
++    $this->assertEquals($default_branch, $expected_default_branch, 'Default branch is corrected when default revision is deleted.');
+ 
+     $entity->_deleted->value = FALSE;
+     $entity->save();
+@@ -390,10 +390,10 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+       $revs[1] => 'deleted',
+       $revs[2] => 'available',
+     ];
+-    $this->assertEqual($default_branch, $expected_default_branch, 'Default branch is corrected when un-deleting the previous default revision which was deleted.');
++    $this->assertEquals($default_branch, $expected_default_branch, 'Default branch is corrected when un-deleting the previous default revision which was deleted.');
+ 
+     $entity = $storage->load(1);
+-    $this->assertEqual($entity->getRevisionId(), 3, 'Default revision has been set correctly.');
++    $this->assertEquals($entity->getRevisionId(), 3, 'Default revision has been set correctly.');
+ 
+     // Create a new branch from the second revision.
+     $entity = $storage->loadRevision(2);
+@@ -406,7 +406,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     $expected_leaf = array_pop($leafs);
+     // In this test we actually don't know which revision that became default.
+     $entity = $storage->load(1) ?: $storage->loadDeleted(1);
+-    $this->assertEqual($entity->_rev->value, $expected_leaf, 'The correct revision won while having two open revisions.');
++    $this->assertEquals($entity->_rev->value, $expected_leaf, 'The correct revision won while having two open revisions.');
+ 
+     // Continue the last branch.
+     $entity = $storage->loadRevision(4);
+@@ -414,7 +414,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     $revs[] = $entity->_rev->value;
+ 
+     $entity = $storage->loadDeleted(1);
+-    $this->assertEqual($entity->getRevisionId(), 5, 'Default revision has been set correctly.');
++    $this->assertEquals($entity->getRevisionId(), 5, 'Default revision has been set correctly.');
+ 
+     // Create a new branch based on the first revision.
+     $entity = $storage->loadRevision(1);
+@@ -422,7 +422,7 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     $revs[] = $entity->_rev->value;
+ 
+     $entity = $storage->loadDeleted(1);
+-    $this->assertEqual($entity->getRevisionId(), 5, 'Default revision has been set correctly.');
++    $this->assertEquals($entity->getRevisionId(), 5, 'Default revision has been set correctly.');
+ 
+     $expected_tree = [
+       [
+@@ -505,10 +505,10 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+     RevisionTreeIndex::sortTree($expected_tree);
+ 
+     $tree = $this->revTree->getTree($uuid);
+-    $this->assertEqual($tree, $expected_tree, 'Tree was correctly parsed.');
++    $this->assertEquals($tree, $expected_tree, 'Tree was correctly parsed.');
+ 
+     $default_rev = $this->revTree->getDefaultRevision($uuid);
+-    $this->assertEqual($default_rev, $revs[2], 'Default revision is correct.');
++    $this->assertEquals($default_rev, $revs[2], 'Default revision is correct.');
+ 
+     $expected_default_branch = [
+       $revs[0] => 'available',
+@@ -516,10 +516,10 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+       $revs[2] => 'available',
+     ];
+     $default_branch = $this->revTree->getDefaultBranch($uuid);
+-    $this->assertEqual($default_branch, $expected_default_branch, 'Default branch is correct.');
++    $this->assertEquals($default_branch, $expected_default_branch, 'Default branch is correct.');
+ 
+     $count = $this->revTree->countRevs($uuid);
+-    $this->assertEqual($count, 3, 'Number of revisions is correct.');
++    $this->assertEquals($count, 3, 'Number of revisions is correct.');
+ 
+     $expected_open_revision = [
+       $revs[2] => 'available',
+@@ -527,13 +527,13 @@ class RevisionTreeIndexTest extends BrowserTestBase {
+       $revs[5] => 'available',
+     ];
+     $open_revisions = $this->revTree->getOpenRevisions($uuid);
+-    $this->assertEqual($open_revisions, $expected_open_revision, 'Open revisions are correct.');
++    $this->assertEquals($open_revisions, $expected_open_revision, 'Open revisions are correct.');
+ 
+     $expected_conflicts = [
+       $revs[5] => 'available',
+     ];
+     $conflicts = $this->revTree->getConflicts($uuid);
+-    $this->assertEqual($conflicts, $expected_conflicts, 'Conflicts are correct');
++    $this->assertEquals($conflicts, $expected_conflicts, 'Conflicts are correct');
+   }
+ 
+ }
+diff --git a/tests/src/Unit/WorkspaceManagerTest.php b/tests/src/Unit/WorkspaceManagerTest.php
+index 0a1d33a..16f4712 100644
+--- a/tests/src/Unit/WorkspaceManagerTest.php
++++ b/tests/src/Unit/WorkspaceManagerTest.php
+@@ -101,10 +101,10 @@ class WorkspaceManagerTest extends UnitTestCase {
+     $second_machine_name = $this->randomMachineName();
+     $this->values = [['machine_name' => $first_machine_name], ['machine_name' => $second_machine_name]];
+ 
+-    $this->entityType = $this->getMock('Drupal\multiversion\Entity\WorkspaceInterface');
+-    $this->entityTypeManager = $this->getMock('Drupal\Core\Entity\EntityTypeManagerInterface');
+-    $this->currentUser = $this->getMock('Drupal\Core\Session\AccountProxyInterface');
+-    $this->logger = $this->getMock('Psr\Log\LoggerInterface');
++    $this->entityType = $this->createMock('Drupal\multiversion\Entity\WorkspaceInterface');
++    $this->entityTypeManager = $this->createMock('Drupal\Core\Entity\EntityTypeManagerInterface');
++    $this->currentUser = $this->createMock('Drupal\Core\Session\AccountProxyInterface');
++    $this->logger = $this->createMock('Psr\Log\LoggerInterface');
+     $this->block_manager = $this->getMockBuilder('Drupal\Core\Block\BlockManager')
+       ->disableOriginalConstructor()
+       ->getMock();
+@@ -112,7 +112,7 @@ class WorkspaceManagerTest extends UnitTestCase {
+       ->method('getDefinition')
+       ->with($this->entityTypeId)
+       ->will($this->returnValue($this->entityType));
+-    $this->requestStack = $this->getMock('Symfony\Component\HttpFoundation\RequestStack');
++    $this->requestStack = $this->createMock('Symfony\Component\HttpFoundation\RequestStack');
+ 
+     $container = new ContainerBuilder();
+     $container->set('entity.manager', $this->entityTypeManager);
+@@ -131,7 +131,7 @@ class WorkspaceManagerTest extends UnitTestCase {
+       $this->entities[] = $entity;
+     }
+ 
+-    $this->workspaceNegotiators[] = [$this->getMock('Drupal\multiversion\Workspace\DefaultWorkspaceNegotiator')];
++    $this->workspaceNegotiators[] = [$this->createMock('Drupal\multiversion\Workspace\DefaultWorkspaceNegotiator')];
+     $session_workspace_negotiator = $this->getMockBuilder('Drupal\multiversion\Workspace\SessionWorkspaceNegotiator')
+       ->disableOriginalConstructor()
+       ->getMock();
+@@ -156,7 +156,7 @@ class WorkspaceManagerTest extends UnitTestCase {
+    * Tests the load() method.
+    */
+   public function testLoad() {
+-    $storage = $this->getMock('Drupal\Core\Entity\EntityStorageInterface');
++    $storage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
+     $storage->expects($this->once())
+       ->method('load')
+       ->with(1)
+@@ -178,7 +178,7 @@ class WorkspaceManagerTest extends UnitTestCase {
+    */
+   public function testLoadMultiple() {
+     $ids = [1,2];
+-    $storage = $this->getMock('Drupal\Core\Entity\EntityStorageInterface');
++    $storage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
+     $storage->expects($this->once())
+       ->method('loadMultiple')
+       ->with($ids)
+@@ -200,7 +200,7 @@ class WorkspaceManagerTest extends UnitTestCase {
+    */
+   public function testSetActiveWorkspace() {
+     // Create the request we will use.
+-    $request = $this->getMock('Symfony\Component\HttpFoundation\Request');
++    $request = $this->createMock('Symfony\Component\HttpFoundation\Request');
+     $this->requestStack->method('getCurrentRequest')->willReturn($request);
+ 
+     // Create the workspace that we will set.
+@@ -233,7 +233,7 @@ class WorkspaceManagerTest extends UnitTestCase {
+     $workspace_id = '123';
+ 
+     // Create the request we will use.
+-    $request = $this->getMock('Symfony\Component\HttpFoundation\Request');
++    $request = $this->createMock('Symfony\Component\HttpFoundation\Request');
+     $this->requestStack->method('getCurrentRequest')->willReturn($request);
+ 
+     // Create the workspace that we will get.
+@@ -242,12 +242,12 @@ class WorkspaceManagerTest extends UnitTestCase {
+       ->getMock();
+ 
+     // Create the negotiator and stub the applies and getWorkspaceId methods.
+-    $negotiator = $this->getMock('Drupal\multiversion\Workspace\DefaultWorkspaceNegotiator');
++    $negotiator = $this->createMock('Drupal\multiversion\Workspace\DefaultWorkspaceNegotiator');
+     $negotiator->method('applies')->willReturn(TRUE);
+     $negotiator->method('getWorkspaceId')->willReturn($workspace_id);
+ 
+     // Create the storage and stub the load method.
+-    $storage = $this->getMock('Drupal\Core\Entity\EntityStorageInterface');
++    $storage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
+     $storage->method('load')->with($workspace_id)->willReturn($workspace);
+ 
+     // Stub the entity manager to return $storage.
