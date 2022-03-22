@@ -19,7 +19,7 @@ class ConfigReverter implements ConfigRevertInterface, ConfigDeleteInterface {
   /**
    * The entity manager.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityManager;
 
