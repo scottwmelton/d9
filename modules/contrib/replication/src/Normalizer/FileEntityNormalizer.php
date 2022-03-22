@@ -2,7 +2,7 @@
 
 namespace Drupal\replication\Normalizer;
 
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
@@ -31,7 +31,7 @@ class FileEntityNormalizer extends ContentEntityNormalizer implements Denormaliz
   protected $processFileAttachment;
 
   /**
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    * @param \Drupal\multiversion\Entity\Index\MultiversionIndexFactory $index_factory
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    * @param \Drupal\replication\UsersMapping $users_mapping
@@ -40,7 +40,7 @@ class FileEntityNormalizer extends ContentEntityNormalizer implements Denormaliz
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    * @param \Drupal\replication\ProcessFileAttachment $process_file_attachment
    */
-  public function __construct(EntityManagerInterface $entity_manager, MultiversionIndexFactory $index_factory, LanguageManagerInterface $language_manager, UsersMapping $users_mapping, ModuleHandlerInterface $module_handler, SelectionPluginManagerInterface $selection_manager = NULL, EventDispatcherInterface $event_dispatcher = NULL, ProcessFileAttachment $process_file_attachment) {
+  public function __construct(EntityTypeManagerInterface $entity_manager, MultiversionIndexFactory $index_factory, LanguageManagerInterface $language_manager, UsersMapping $users_mapping, ModuleHandlerInterface $module_handler, SelectionPluginManagerInterface $selection_manager = NULL, EventDispatcherInterface $event_dispatcher = NULL, ProcessFileAttachment $process_file_attachment) {
     parent::__construct($entity_manager, $index_factory, $language_manager, $users_mapping, $module_handler, $selection_manager, $event_dispatcher);
     $this->processFileAttachment = $process_file_attachment;
   }
