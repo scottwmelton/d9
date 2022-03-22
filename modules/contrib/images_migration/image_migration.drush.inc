@@ -30,7 +30,7 @@ function drush_image_migration_image_migrate($source_path = '', $destination_pat
 	$source_path = drush_prompt(dt('Please Enter Source Path: '));
 	$destination_path = drush_prompt(dt('Please Enter Destination Path: '));
 	
-	$contentTypes = \Drupal::service('entity.manager')->getStorage('node_type')->loadMultiple();
+	$contentTypes = \Drupal::service('entity_type.manager')->getStorage('node_type')->loadMultiple();
 	$contentTypesList = [];
 	foreach ($contentTypes as $contentType) {
 		$contentTypesList[$contentType->id()] = $contentType->label();
