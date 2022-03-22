@@ -60,8 +60,8 @@ abstract class EntityFormWizardBase extends FormWizardBase implements EntityForm
     ];
     // Keep the deprecated entity manager service as a parameter as well for
     // BC, so that subclasses still work.
-    if (\Drupal::hasService('entity.manager')) {
-      $parameters['entity_manager'] = \Drupal::service('entity.manager');
+    if (\Drupal::hasService('entity_type.manager')) {
+      $parameters['entity_manager'] = \Drupal::service('entity_type.manager');
     }
     return $parameters;
   }
