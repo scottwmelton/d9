@@ -79,7 +79,7 @@ abstract class ResourceTestBase extends RESTTestBase {
     $this->workspace->save();
     $this->dbname = $this->workspace->getMachineName();
 
-    $this->entityManager = $this->container->get('entity.manager');
+    $this->entityManager = $this->container->get('entity_type.manager');
     $this->entityTypeManager = $this->container->get('entity_type.manager');
     $this->entityRepository = $this->container->get('entity.repository');
     $this->revTree = $this->container->get('multiversion.entity_index.rev.tree');
