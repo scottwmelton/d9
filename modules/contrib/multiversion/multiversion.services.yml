@@ -46,7 +46,7 @@ services:
     arguments: ['@database']
   multiversion.manager:
     class: Drupal\multiversion\MultiversionManager
-    arguments: ['@workspace.manager', '@serializer', '@entity.manager', '@state', '@language_manager', '@cache.discovery', '@database', '@entity_field.manager', '@event_dispatcher']
+    arguments: ['@workspace.manager', '@serializer', '@entity_type.manager', '@state', '@language_manager', '@cache.discovery', '@database', '@entity_field.manager', '@event_dispatcher']
     calls:
       - [setContainer, ['@service_container']]
   workspace.manager:
@@ -95,7 +95,7 @@ services:
       - { name: workspace_negotiator, priority: 100 }
   workspace.negotiator.session:
     class: Drupal\multiversion\Workspace\SessionWorkspaceNegotiator
-    arguments: ['@user.private_tempstore']
+    arguments: ['@tempstore.private']
     calls:
       - [setContainer, ['@service_container']]
       - [setCurrentUser, ['@current_user']]

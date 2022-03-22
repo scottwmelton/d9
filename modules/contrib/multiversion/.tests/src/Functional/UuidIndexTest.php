@@ -82,7 +82,7 @@ class UuidIndexTest extends MultiversionFunctionalTestBase {
     $this->assertEqual($expected, $entries, 'Multiple entries are correct.');
 
     /** @var \Drupal\Core\Entity\EntityStorageInterface $workspace_storage */
-    $workspace_storage = $this->container->get('entity.manager')->getStorage('workspace');
+    $workspace_storage = $this->container->get('entity_type.manager')->getStorage('workspace');
     // Create new workspaces and query those.
     $ws1 = $this->randomMachineName();
     $workspace_storage->create(['machine_name' => $ws1, 'type' => 'basic']);

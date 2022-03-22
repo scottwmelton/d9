@@ -2,7 +2,7 @@
 
 namespace Drupal\multiversion\Plugin\migrate\destination;
 
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
 use Drupal\Core\Password\PasswordInterface;
@@ -42,9 +42,9 @@ class EntityContentBase extends CoreEntityContentBase {
       $plugin_id,
       $plugin_definition,
       $migration,
-      $container->get('entity.manager')->getStorage($entity_type_id),
-      array_keys($container->get('entity.manager')->getBundleInfo($entity_type_id)),
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager')->getStorage($entity_type_id),
+      array_keys($container->get('entity_type.manager')->getBundleInfo($entity_type_id)),
+      $container->get('entity_type.manager'),
       $container->get('plugin.manager.field.field_type'),
       $container->get('password')
     );
@@ -65,7 +65,7 @@ class EntityContentBase extends CoreEntityContentBase {
    *   The storage for this entity type.
    * @param array $bundles
    *   The list of bundles this entity type has.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    *   The entity manager service.
    * @param \Drupal\Core\Password\PasswordInterface $password
    *   The password service.

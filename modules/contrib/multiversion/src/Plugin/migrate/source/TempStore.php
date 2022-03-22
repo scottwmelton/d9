@@ -2,7 +2,7 @@
 
 namespace Drupal\multiversion\Plugin\migrate\source;
 
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
@@ -31,7 +31,7 @@ class TempStore extends SourcePluginBase {
       $plugin_id,
       $plugin_definition,
       $migration,
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('keyvalue.expirable')
     );
   }

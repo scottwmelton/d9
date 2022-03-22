@@ -2,7 +2,7 @@
 
 namespace Drupal\multiversion\Plugin\migrate\destination;
 
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -45,7 +45,7 @@ class TempStore extends DestinationBase implements ContainerFactoryPluginInterfa
    */
   private $entityLanguageKey;
 
-  /** @var \Drupal\Core\Entity\EntityManagerInterface  */
+  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface  */
   private $entityManager;
 
   /**
@@ -57,7 +57,7 @@ class TempStore extends DestinationBase implements ContainerFactoryPluginInterfa
       $plugin_id,
       $plugin_definition,
       $migration,
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('keyvalue.expirable')
     );
   }

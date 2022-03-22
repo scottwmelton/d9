@@ -14,7 +14,7 @@ class UuidIndexHooksTest extends MultiversionFunctionalTestBase {
     $this->assertTrue(empty($keys), 'Empty array was returned when fetching non-existing UUID.');
 
     /** @var \Drupal\Core\Entity\EntityStorageInterface $entity_test_storage */
-    $entity_test_storage = $this->container->get('entity.manager')->getStorage('entity_test');
+    $entity_test_storage = $this->container->get('entity_type.manager')->getStorage('entity_test');
     $entity = $entity_test_storage->create();
     $entity->save();
     $keys = $this->uuidIndex->get($entity->uuid());

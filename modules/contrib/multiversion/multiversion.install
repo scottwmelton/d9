@@ -94,7 +94,7 @@ function multiversion_update_8001() {
   $connection = Database::getConnection();
   if ($connection instanceof Connection) {
     $schema = $connection->schema();
-    $entity_manager = \Drupal::service('entity.manager');
+    $entity_manager = \Drupal::service('entity_type.manager');
     $manager = \Drupal::service('multiversion.manager');
 
     // Find all supported entities.

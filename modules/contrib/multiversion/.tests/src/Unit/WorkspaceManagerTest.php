@@ -115,7 +115,7 @@ class WorkspaceManagerTest extends UnitTestCase {
     $this->requestStack = $this->getMock('Symfony\Component\HttpFoundation\RequestStack');
 
     $container = new ContainerBuilder();
-    $container->set('entity.manager', $this->entityTypeManager);
+    $container->set('entity_type.manager', $this->entityTypeManager);
     $container->set('request_stack', $this->requestStack);
     $container->setParameter('workspace.default', 1);
     \Drupal::setContainer($container);

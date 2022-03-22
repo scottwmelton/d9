@@ -66,7 +66,7 @@ class CommentStatisticsTest extends MultiversionFunctionalTestBase {
    * Tests the node comment statistics.
    */
   function testCommentNodeCommentStatistics() {
-    $node_storage = $this->container->get('entity.manager')->getStorage('node');
+    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
     $this->drupalGet('<front>');
     $this->assertNoLink(t('1 comment'));
     $this->assertEqual($this->node->get('comment')->comment_count, 0, 'The number of comments for the node is correct (0 comments)');

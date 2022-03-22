@@ -4,7 +4,7 @@ namespace Drupal\multiversion\Entity\Storage\Sql;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Language\LanguageManagerInterface;
@@ -30,7 +30,7 @@ class NodeStorage extends CoreNodeStorage implements ContentEntityStorageInterfa
     return new static(
       $entity_type,
       $container->get('database'),
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('cache.entity'),
       $container->get('language_manager'),
       $container->get('module_handler')

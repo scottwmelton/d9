@@ -2,7 +2,7 @@
 
 namespace Drupal\multiversion\Plugin\migrate\source;
 
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\Plugin\migrate\source\SourcePluginBase as CoreSourcePluginBase;
 use Drupal\migrate\Plugin\MigrationInterface;
@@ -39,7 +39,7 @@ abstract class SourcePluginBase extends CoreSourcePluginBase implements Containe
       $plugin_id,
       $plugin_definition,
       $migration,
-      $container->get('entity.manager')
+      $container->get('entity_type.manager')
     );
   }
 
