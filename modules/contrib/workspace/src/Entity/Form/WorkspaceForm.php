@@ -4,7 +4,7 @@ namespace Drupal\workspace\Entity\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityConstraintViolationListInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
@@ -34,7 +34,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * Constructs a ContentEntityForm object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    * @param ConflictTrackerInterface $conflict_tracker
    *   The conflict tracking service.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
@@ -42,7 +42,7 @@ class WorkspaceForm extends ContentEntityForm {
    * @todo Add TimeInterface as parameter for constructor and use the value in
    * parent constructor starting with Drupal 8.4.0.
    */
-  public function __construct(EntityManagerInterface $entity_manager, ConflictTrackerInterface $conflict_tracker, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
+  public function __construct(EntityTypeManagerInterface $entity_manager, ConflictTrackerInterface $conflict_tracker, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
     parent::__construct($entity_manager, $entity_type_bundle_info);
     $this->conflictTracker = $conflict_tracker;
   }
@@ -52,7 +52,7 @@ class WorkspaceForm extends ContentEntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('workspace.conflict_tracker'),
       $container->get('entity_type.bundle.info')
     );

@@ -5,7 +5,7 @@ namespace Drupal\workspace\Entity\Form;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
 use Drupal\Core\Entity\EntityDeleteFormTrait;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -37,7 +37,7 @@ class WorkspaceDeleteForm extends ContentEntityConfirmFormBase {
    *
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $default_workspace_id
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface|null $entity_type_bundle_info
    * @param \Drupal\Component\Datetime\TimeInterface|null $time
@@ -60,7 +60,7 @@ class WorkspaceDeleteForm extends ContentEntityConfirmFormBase {
     return new static(
       $container->get('workspace.manager'),
       $container->getParameter('workspace.default'),
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('entity.repository'),
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time')

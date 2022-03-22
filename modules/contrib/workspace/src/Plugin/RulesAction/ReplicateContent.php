@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "workspace_replicate_content",
  *   label = @Translation("Replicate content"),
  *   category = @Translation("Workspace"),
- *   context = {
+ *   context_definition = {
  *     "entity" = @ContextDefinition("entity",
  *       label = @Translation("Entity"),
  *       description = @Translation("Specifies the entity, which the source workspace is derived from.")

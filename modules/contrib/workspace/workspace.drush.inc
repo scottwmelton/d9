@@ -64,7 +64,7 @@ function drush_workspace_uninstall() {
       $database = \Drupal::database();
       $database
         ->delete('key_value_expire')
-        ->condition('collection', 'user.private_tempstore.workspace.negotiator.session')
+        ->condition('collection', 'tempstore.private.workspace.negotiator.session')
         ->execute();
 
       // Delete the 'workspace_replication' queue before deleting non-default
